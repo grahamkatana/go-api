@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -101,6 +102,38 @@ func returnBook(c *gin.Context) {
 
 }
 
+//upload a file
+func upload(c *gin.Context) {
+	file, err := c.FormFile("file")
+	if err != nil {
+
+		c.String(500, " Error uploading file ")
+	}
+	c.SaveUploadedFile(file, "./tmp/"+file.Filename)
+	c.String(http.StatusOK, file.Filename+" Upload successful ")
+
+}
+
+//multi upload
+
+func multiUpload(c *gin.Context) {
+	form, err := c.MultipartForm()
+	if err != nil {
+
+		c.String(http.StatusBadRequest, fmt.Sprintf("get err %s"), err.Error())
+	}
+	files := form.File["files"]
+	for _, file := range files {
+
+		if err := c.SaveUploadedFile(file, "./temp/"+file.Filename); err != nil {
+
+			c.String(http.StatusBadRequest, fmt.Sprintf("upload err %s", err.Error()))
+			return
+		}
+	}
+	c.String(http.StatusOK, fmt.Sprintf("upload %d files", len(files)))
+}
+
 //helper function to get by ID
 func getBookById(id string) (*book, error) {
 	for i, b := range books {
@@ -129,14 +162,15 @@ func loadHome(c *gin.Context) {
 func main() {
 	//gin router setup
 	router := gin.Default()
-
+	router.MaxMultipartMemory = 8 << 20
 	router.GET("/", loadHome)
 	router.GET("/books", getBooks)
 	router.POST("/books", createBook)
 	router.GET("/books/:id", findBook)
 	router.PATCH("/books/checkout", checkoutBook)
 	router.PATCH("/books/return", returnBook)
-
+	router.POST("/upload", upload)
+	router.POST("/multi", multiUpload)
 	router.Run("localhost:8080")
 
 }
