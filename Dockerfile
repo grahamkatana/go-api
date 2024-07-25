@@ -5,5 +5,5 @@ RUN go build -o /server .
 
 FROM scratch
 COPY --from=build /server /server
-EXPOSE 3006
+EXPOSE 3000
 CMD ["/server"]
