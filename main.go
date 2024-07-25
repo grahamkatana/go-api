@@ -171,6 +171,7 @@ func main() {
 	router.PATCH("/books/return", returnBook)
 	router.POST("/upload", upload)
 	router.POST("/multi", multiUpload)
-	router.Run("localhost:8080")
+	// router.Run("localhost:8080")
+	router.Run(":3006")
 
 }
